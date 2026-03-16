@@ -3,371 +3,319 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>AutoCaption Pro — AI Captions</title>
-<link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;700;800&family=DM+Mono:wght@400;500&family=DM+Sans:wght@300;400;500&display=swap" rel="stylesheet">
+<title>AutoCaption Pro</title>
+<link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=DM+Sans:wght@300;400;500;600&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet">
 <style>
 *,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
 :root{
-  --bg:#07070f;--bg2:#0d0d1c;--bg3:#13132a;
-  --border:rgba(255,255,255,0.07);
-  --accent:#7c6bff;--accent2:#ff6bde;--green:#00e87a;--red:#ff4566;
-  --text:#eeeeff;--muted:rgba(238,238,255,0.4);
-  --panel:rgba(255,255,255,0.04);--radius:12px;
+  --bg:#080810;--surface:#10101e;--card:#16162a;
+  --border:rgba(255,255,255,0.06);
+  --accent:#ff3d6e;--accent2:#ffb800;--blue:#4488ff;
+  --text:#f0f0ff;--muted:rgba(240,240,255,0.38);
+  --green:#00e87a;--radius:10px;
 }
-body{background:var(--bg);color:var(--text);font-family:'DM Sans',sans-serif;min-height:100vh;overflow-x:hidden}
-body::before{content:'';position:fixed;top:-20%;left:-10%;width:55vw;height:55vw;background:radial-gradient(circle,rgba(124,107,255,0.07) 0%,transparent 70%);pointer-events:none;z-index:0}
-body::after{content:'';position:fixed;bottom:-20%;right:-10%;width:45vw;height:45vw;background:radial-gradient(circle,rgba(255,107,222,0.05) 0%,transparent 70%);pointer-events:none;z-index:0}
+body{background:var(--bg);color:var(--text);font-family:'DM Sans',sans-serif;height:100vh;overflow:hidden;display:flex;flex-direction:column}
 
-header{position:relative;z-index:10;display:flex;align-items:center;justify-content:space-between;padding:14px 28px;border-bottom:1px solid var(--border);background:rgba(7,7,15,0.85);backdrop-filter:blur(16px)}
-.logo{font-family:'Syne',sans-serif;font-weight:800;font-size:1.25rem;background:linear-gradient(135deg,var(--accent),var(--accent2));-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text}
-.model-status{display:flex;align-items:center;gap:8px;font-family:'DM Mono',monospace;font-size:0.72rem;color:var(--muted)}
-.status-dot{width:8px;height:8px;border-radius:50%;background:var(--muted);flex-shrink:0;transition:background 0.3s}
-.status-dot.ready{background:var(--green);box-shadow:0 0 8px var(--green)}
-.status-dot.loading{background:#ffaa00;animation:blink 1s infinite}
-@keyframes blink{0%,100%{opacity:1}50%{opacity:0.3}}
+/* HEADER */
+header{display:flex;align-items:center;justify-content:space-between;padding:12px 24px;border-bottom:1px solid var(--border);background:rgba(8,8,16,0.9);backdrop-filter:blur(12px);flex-shrink:0;z-index:10}
+.logo{font-family:'Bebas Neue',sans-serif;font-size:1.5rem;letter-spacing:0.08em;background:linear-gradient(90deg,var(--accent),var(--accent2));-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text}
+.rec-indicator{display:flex;align-items:center;gap:7px;font-family:'DM Mono',monospace;font-size:0.72rem;color:var(--muted)}
+.rec-dot{width:8px;height:8px;border-radius:50%;background:var(--muted);flex-shrink:0}
+.rec-dot.live{background:var(--accent);box-shadow:0 0 10px var(--accent);animation:recpulse 1s infinite}
+.rec-dot.ready{background:var(--green);box-shadow:0 0 8px var(--green)}
+@keyframes recpulse{0%,100%{opacity:1;transform:scale(1)}50%{opacity:0.6;transform:scale(1.3)}}
 
-.app{position:relative;z-index:1;display:grid;grid-template-columns:1fr 320px;height:calc(100vh - 57px)}
+/* MAIN LAYOUT */
+.app{display:grid;grid-template-columns:1fr 300px;flex:1;min-height:0}
 
-/* VIDEO AREA */
-.video-area{display:flex;flex-direction:column;gap:0;overflow:hidden;border-right:1px solid var(--border)}
+/* VIDEO SIDE */
+.video-side{display:flex;flex-direction:column;min-height:0;border-right:1px solid var(--border)}
 
-.drop-zone{position:relative;flex:1;background:#000;display:flex;flex-direction:column;align-items:center;justify-content:center;cursor:pointer;overflow:hidden;min-height:0}
-.drop-zone.has-video{cursor:default}
-.drop-zone-ui{text-align:center;pointer-events:none}
-.drop-icon{font-size:3rem;margin-bottom:12px;opacity:0.2}
-.drop-title{font-family:'Syne',sans-serif;font-weight:700;font-size:1.1rem;opacity:0.5;margin-bottom:6px}
-.drop-sub{font-size:0.8rem;color:var(--muted);margin-bottom:16px}
-.drop-btn{pointer-events:all;padding:9px 22px;border-radius:8px;background:var(--accent);color:white;font-family:'Syne',sans-serif;font-weight:700;font-size:0.82rem;border:none;cursor:pointer;transition:opacity 0.2s}
-.drop-btn:hover{opacity:0.85}
+.video-wrap{position:relative;flex:1;background:#000;min-height:0;display:flex;align-items:center;justify-content:center;cursor:pointer;overflow:hidden}
+.drop-msg{text-align:center;pointer-events:none;user-select:none}
+.drop-emoji{font-size:3rem;margin-bottom:10px;opacity:0.15}
+.drop-title{font-family:'Bebas Neue',sans-serif;font-size:1.8rem;letter-spacing:0.1em;opacity:0.25;margin-bottom:6px}
+.drop-sub{font-size:0.78rem;color:var(--muted);margin-bottom:18px}
+.choose-btn{pointer-events:all;padding:9px 24px;background:var(--accent);color:white;border:none;border-radius:8px;font-family:'DM Sans',sans-serif;font-weight:600;font-size:0.85rem;cursor:pointer;transition:opacity 0.2s}
+.choose-btn:hover{opacity:0.85}
+#fileInput{display:none}
 
-#mainVideo{position:absolute;inset:0;width:100%;height:100%;object-fit:contain;display:none}
-#videoInput{display:none}
+video{position:absolute;inset:0;width:100%;height:100%;object-fit:contain;display:none}
 
 /* CAPTION OVERLAY */
-.caption-overlay{position:absolute;width:88%;text-align:center;pointer-events:none;z-index:20;display:flex;flex-wrap:wrap;justify-content:center;align-items:flex-end;gap:5px;transition:all 0.3s}
+#captionBox{position:absolute;left:50%;transform:translateX(-50%);bottom:14%;width:90%;text-align:center;pointer-events:none;z-index:20;display:flex;flex-wrap:wrap;justify-content:center;gap:5px;align-items:flex-end;transition:top 0.3s,bottom 0.3s}
 
-.caption-word{display:inline-block;transition:all 0.1s ease;font-family:'Syne',sans-serif}
-.caption-word.active{animation:wordActive 0.18s cubic-bezier(0.34,1.56,0.64,1) forwards}
-.caption-word.past{opacity:0.45}
-@keyframes wordActive{0%{transform:scale(0.75);opacity:0.5}100%{transform:scale(1.1)}}
+.cword{display:inline-block;font-family:'Bebas Neue',sans-serif;font-size:36px;color:#fff;padding:2px 8px;border-radius:6px;background:rgba(0,0,0,0.72);transition:color 0.08s,transform 0.08s;line-height:1.2}
+.cword.active{color:var(--accent2);transform:scale(1.12)}
+.cword.past{opacity:0.5}
 
 /* VIDEO CONTROLS */
-.video-controls{position:absolute;bottom:0;left:0;right:0;padding:12px 16px 10px;background:linear-gradient(to top,rgba(0,0,0,0.85) 0%,transparent 100%);display:flex;align-items:center;gap:10px;z-index:30;opacity:0;transition:opacity 0.2s}
-.drop-zone:hover .video-controls,.video-controls.pinned{opacity:1}
-.play-btn{width:34px;height:34px;border-radius:50%;background:rgba(255,255,255,0.15);border:none;color:white;font-size:0.9rem;cursor:pointer;display:flex;align-items:center;justify-content:center;flex-shrink:0;transition:background 0.2s}
-.play-btn:hover{background:rgba(255,255,255,0.28)}
-.progress-wrap{flex:1;height:5px;background:rgba(255,255,255,0.15);border-radius:3px;cursor:pointer;position:relative}
-.progress-fill{height:100%;background:linear-gradient(90deg,var(--accent),var(--accent2));border-radius:3px;width:0%;pointer-events:none}
-.time-lbl{font-family:'DM Mono',monospace;font-size:0.68rem;color:rgba(255,255,255,0.6);white-space:nowrap}
+.vcontrols{position:absolute;bottom:0;left:0;right:0;padding:10px 14px 8px;background:linear-gradient(transparent,rgba(0,0,0,0.88));display:flex;align-items:center;gap:10px;z-index:30;opacity:0;transition:opacity 0.2s}
+.video-wrap:hover .vcontrols,.vcontrols.show{opacity:1}
+.pbtn{width:32px;height:32px;border-radius:50%;background:rgba(255,255,255,0.14);border:none;color:white;cursor:pointer;display:flex;align-items:center;justify-content:center;font-size:0.85rem;flex-shrink:0;transition:background 0.15s}
+.pbtn:hover{background:rgba(255,255,255,0.26)}
+.pbar{flex:1;height:4px;background:rgba(255,255,255,0.18);border-radius:2px;cursor:pointer;position:relative}
+.pfill{height:100%;background:linear-gradient(90deg,var(--accent),var(--accent2));border-radius:2px;width:0%}
+.tlbl{font-family:'DM Mono',monospace;font-size:0.68rem;color:rgba(255,255,255,0.55);white-space:nowrap}
 
-/* AI TRANSCRIBE PANEL (bottom bar) */
-.ai-bar{display:flex;align-items:center;gap:10px;padding:10px 16px;border-top:1px solid var(--border);background:var(--bg2);flex-shrink:0}
-.transcribe-btn{display:flex;align-items:center;gap:8px;padding:10px 20px;border-radius:10px;background:linear-gradient(135deg,var(--accent),var(--accent2));color:white;font-family:'Syne',sans-serif;font-weight:800;font-size:0.88rem;border:none;cursor:pointer;transition:all 0.2s;white-space:nowrap;flex-shrink:0}
-.transcribe-btn:hover{opacity:0.88;transform:translateY(-1px)}
-.transcribe-btn:disabled{opacity:0.35;cursor:not-allowed;transform:none}
-.progress-container{flex:1;display:flex;flex-direction:column;gap:5px}
-.progress-label{font-family:'DM Mono',monospace;font-size:0.7rem;color:var(--muted)}
-.progress-bar-wrap{height:4px;background:var(--border);border-radius:2px;overflow:hidden}
-.progress-bar-fill{height:100%;background:linear-gradient(90deg,var(--accent),var(--accent2));border-radius:2px;width:0%;transition:width 0.3s}
-.model-select{background:var(--panel);border:1px solid var(--border);border-radius:8px;color:var(--text);font-family:'DM Mono',monospace;font-size:0.72rem;padding:6px 10px;cursor:pointer;outline:none}
-option{background:#111}
+/* BOTTOM ACTION BAR */
+.action-bar{display:flex;align-items:center;gap:10px;padding:10px 16px;border-top:1px solid var(--border);background:var(--surface);flex-shrink:0}
+.big-btn{display:flex;align-items:center;gap:8px;padding:10px 20px;border-radius:10px;font-family:'Bebas Neue',sans-serif;letter-spacing:0.08em;font-size:1rem;border:none;cursor:pointer;transition:all 0.2s;flex-shrink:0}
+.big-btn:disabled{opacity:0.3;cursor:not-allowed}
+.btn-caption{background:linear-gradient(135deg,var(--accent),#ff7a00);color:white}
+.btn-caption:not(:disabled):hover{transform:translateY(-1px);box-shadow:0 6px 20px rgba(255,61,110,0.4)}
+.btn-stop{background:rgba(255,61,110,0.12);border:1px solid rgba(255,61,110,0.3);color:var(--accent);display:none}
+.btn-stop:not(:disabled):hover{background:rgba(255,61,110,0.22)}
+.status-msg{flex:1;font-family:'DM Mono',monospace;font-size:0.72rem;color:var(--muted);line-height:1.4}
 
-/* SIDE PANEL */
-.side-panel{display:flex;flex-direction:column;overflow-y:auto;background:var(--bg2)}
-.side-panel::-webkit-scrollbar{width:4px}
-.side-panel::-webkit-scrollbar-thumb{background:var(--border);border-radius:2px}
+/* RIGHT PANEL */
+.right-panel{display:flex;flex-direction:column;overflow-y:auto;background:var(--surface)}
+.right-panel::-webkit-scrollbar{width:3px}
+.right-panel::-webkit-scrollbar-thumb{background:var(--border)}
 
-.panel-tabs{display:flex;gap:2px;padding:10px 10px 0;background:var(--bg2);border-bottom:1px solid var(--border);flex-shrink:0}
-.ptab{flex:1;padding:8px 4px;text-align:center;font-family:'Syne',sans-serif;font-weight:700;font-size:0.75rem;color:var(--muted);border:none;background:none;cursor:pointer;border-bottom:2px solid transparent;transition:all 0.2s;padding-bottom:10px}
-.ptab.active{color:var(--accent);border-bottom-color:var(--accent)}
+.rtabs{display:flex;border-bottom:1px solid var(--border);flex-shrink:0}
+.rtab{flex:1;padding:11px 4px;font-family:'DM Sans',sans-serif;font-weight:600;font-size:0.75rem;color:var(--muted);border:none;background:none;cursor:pointer;border-bottom:2px solid transparent;transition:all 0.2s}
+.rtab.on{color:var(--accent);border-bottom-color:var(--accent)}
 
-.ptab-content{display:none;flex-direction:column;overflow-y:auto;flex:1}
-.ptab-content.active{display:flex}
+.rpane{display:none;flex-direction:column;gap:0}
+.rpane.on{display:flex}
 
-.psection{padding:16px;border-bottom:1px solid var(--border)}
-.psection:last-child{border-bottom:none}
-.psec-title{font-family:'Syne',sans-serif;font-weight:700;font-size:0.8rem;margin-bottom:12px;display:flex;align-items:center;gap:7px}
-.psec-title::before{content:'';width:3px;height:12px;border-radius:2px;background:linear-gradient(var(--accent),var(--accent2));flex-shrink:0}
+.rsec{padding:14px 16px;border-bottom:1px solid var(--border)}
+.rsec:last-child{border-bottom:none}
+.rtitle{font-family:'DM Sans',sans-serif;font-weight:700;font-size:0.78rem;margin-bottom:11px;display:flex;align-items:center;gap:6px}
+.rtitle::before{content:'';width:3px;height:11px;border-radius:2px;background:linear-gradient(var(--accent),var(--accent2));flex-shrink:0}
 
-/* STYLE PRESETS */
-.presets{display:grid;grid-template-columns:1fr 1fr;gap:7px}
-.preset{padding:10px 8px;border-radius:8px;border:1px solid var(--border);background:var(--panel);cursor:pointer;text-align:center;transition:all 0.2s}
-.preset:hover,.preset.active{border-color:var(--accent);background:rgba(124,107,255,0.1)}
-.preset-name{font-family:'Syne',sans-serif;font-weight:700;font-size:0.72rem;color:var(--text);margin-bottom:3px}
-.preset-preview{font-size:0.65rem;color:var(--muted)}
+/* PRESETS */
+.presets{display:grid;grid-template-columns:1fr 1fr;gap:6px}
+.preset{padding:9px 7px;border-radius:8px;border:1px solid var(--border);background:rgba(255,255,255,0.03);cursor:pointer;text-align:center;transition:all 0.18s}
+.preset:hover,.preset.on{border-color:var(--accent);background:rgba(255,61,110,0.08)}
+.pname{font-family:'DM Sans',sans-serif;font-weight:700;font-size:0.72rem;margin-bottom:2px}
+.psub{font-size:0.62rem;color:var(--muted)}
 
 /* CONTROLS */
-label{font-size:0.72rem;color:var(--muted);font-family:'DM Mono',monospace;letter-spacing:0.04em}
-.ctrl{display:flex;flex-direction:column;gap:5px;margin-bottom:12px}
+.ctrl{margin-bottom:11px}
 .ctrl:last-child{margin-bottom:0}
+.clabel{font-family:'DM Mono',monospace;font-size:0.65rem;color:var(--muted);letter-spacing:0.06em;margin-bottom:5px;display:block}
+select{width:100%;background:rgba(255,255,255,0.05);border:1px solid var(--border);border-radius:7px;color:var(--text);font-family:'DM Sans',sans-serif;font-size:0.82rem;padding:7px 10px;outline:none;cursor:pointer}
+option{background:#111}
 input[type=range]{-webkit-appearance:none;width:100%;height:3px;background:var(--border);border-radius:2px;outline:none}
 input[type=range]::-webkit-slider-thumb{-webkit-appearance:none;width:13px;height:13px;border-radius:50%;background:var(--accent);cursor:pointer}
-select{width:100%;background:rgba(255,255,255,0.05);border:1px solid var(--border);border-radius:8px;color:var(--text);font-family:'DM Sans',sans-serif;font-size:0.83rem;padding:7px 10px;outline:none;cursor:pointer}
-input[type=color]{-webkit-appearance:none;width:30px;height:30px;border:2px solid var(--border);border-radius:6px;cursor:pointer;padding:0;background:none;overflow:hidden}
-.row{display:flex;align-items:center;gap:8px}
-.row input[type=range]{flex:1}
-.val{font-family:'DM Mono',monospace;font-size:0.72rem;color:var(--accent);min-width:30px;text-align:right}
+input[type=color]{-webkit-appearance:none;width:28px;height:28px;border:2px solid var(--border);border-radius:5px;cursor:pointer;padding:0;background:none;overflow:hidden}
+.crow{display:flex;align-items:center;gap:8px}
+.crow input[type=range]{flex:1}
+.cval{font-family:'DM Mono',monospace;font-size:0.68rem;color:var(--accent);min-width:28px;text-align:right}
 
-/* ANIMATION GRID */
-.anim-grid{display:grid;grid-template-columns:1fr 1fr 1fr;gap:6px}
-.anim-opt{padding:8px 4px;text-align:center;border-radius:7px;border:1px solid var(--border);background:var(--panel);cursor:pointer;font-family:'Syne',sans-serif;font-size:0.7rem;font-weight:700;color:var(--muted);transition:all 0.2s}
-.anim-opt:hover,.anim-opt.active{border-color:var(--accent);color:var(--accent);background:rgba(124,107,255,0.1)}
+/* DISPLAY MODES */
+.modes{display:flex;gap:5px}
+.mode{flex:1;padding:7px 4px;text-align:center;border-radius:7px;border:1px solid var(--border);background:rgba(255,255,255,0.03);cursor:pointer;font-family:'DM Sans',sans-serif;font-weight:600;font-size:0.68rem;color:var(--muted);transition:all 0.18s}
+.mode:hover,.mode.on{border-color:var(--accent);color:var(--accent);background:rgba(255,61,110,0.08)}
 
-/* POSITION GRID */
-.pos-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:4px;width:100px;margin:0 auto}
-.pos-cell{aspect-ratio:1;border-radius:4px;border:1px solid var(--border);cursor:pointer;transition:all 0.2s;background:var(--panel)}
-.pos-cell:hover{border-color:var(--accent);background:rgba(124,107,255,0.1)}
-.pos-cell.active{border-color:var(--accent);background:var(--accent)}
+/* ANIM */
+.anims{display:grid;grid-template-columns:1fr 1fr 1fr;gap:5px}
+.animopt{padding:7px 4px;text-align:center;border-radius:7px;border:1px solid var(--border);background:rgba(255,255,255,0.03);cursor:pointer;font-size:0.68rem;font-weight:600;color:var(--muted);transition:all 0.18s}
+.animopt:hover,.animopt.on{border-color:var(--accent);color:var(--accent);background:rgba(255,61,110,0.08)}
+
+/* POSITION */
+.posgrid{display:grid;grid-template-columns:repeat(3,1fr);gap:4px;width:96px;margin:0 auto}
+.poscell{aspect-ratio:1;border-radius:4px;border:1px solid var(--border);cursor:pointer;transition:all 0.18s;background:rgba(255,255,255,0.03)}
+.poscell:hover{border-color:var(--accent);background:rgba(255,61,110,0.1)}
+.poscell.on{background:var(--accent);border-color:var(--accent)}
 
 /* WORD LIST */
-.word-list{display:flex;flex-direction:column;gap:4px;max-height:200px;overflow-y:auto}
-.word-list::-webkit-scrollbar{width:3px}
-.word-list::-webkit-scrollbar-thumb{background:var(--border)}
-.word-row{display:grid;grid-template-columns:1fr 66px 66px 24px;gap:4px;align-items:center;padding:5px 8px;background:rgba(255,255,255,0.03);border-radius:6px}
-.word-row input[type=text]{background:none;border:none;color:var(--text);font-size:0.82rem;font-family:'DM Sans',sans-serif;outline:none;width:100%}
-.word-row input[type=number]{background:rgba(255,255,255,0.05);border:1px solid var(--border);border-radius:4px;color:var(--text);font-family:'DM Mono',monospace;font-size:0.7rem;padding:2px 5px;width:100%;outline:none}
-.del-w{background:none;border:none;color:var(--muted);cursor:pointer;font-size:0.8rem;text-align:center;transition:color 0.2s}
-.del-w:hover{color:var(--red)}
-.wl-header{display:grid;grid-template-columns:1fr 66px 66px 24px;gap:4px;padding:0 8px 4px;font-family:'DM Mono',monospace;font-size:0.65rem;color:var(--muted)}
+.wordlist{display:flex;flex-direction:column;gap:3px;max-height:180px;overflow-y:auto;margin-bottom:8px}
+.wordlist::-webkit-scrollbar{width:3px}
+.wordlist::-webkit-scrollbar-thumb{background:var(--border)}
+.wrow{display:grid;grid-template-columns:1fr 58px 58px 22px;gap:4px;align-items:center;padding:5px 7px;background:rgba(255,255,255,0.03);border-radius:5px}
+.wrow input[type=text]{background:none;border:none;color:var(--text);font-size:0.8rem;font-family:'DM Sans',sans-serif;outline:none;width:100%}
+.wrow input[type=number]{background:rgba(255,255,255,0.05);border:1px solid var(--border);border-radius:3px;color:var(--text);font-family:'DM Mono',monospace;font-size:0.68rem;padding:2px 4px;width:100%;outline:none}
+.wdel{background:none;border:none;color:var(--muted);cursor:pointer;font-size:0.75rem;transition:color 0.15s}
+.wdel:hover{color:var(--accent)}
 
-/* EXPORT BUTTONS */
-.exp-btn{width:100%;padding:11px;border-radius:9px;font-family:'Syne',sans-serif;font-weight:700;font-size:0.85rem;border:none;cursor:pointer;transition:all 0.2s;display:flex;align-items:center;justify-content:center;gap:7px;margin-bottom:7px}
-.exp-btn:last-child{margin-bottom:0}
+/* EXPORT */
+.expbtn{width:100%;padding:11px;border-radius:8px;font-family:'DM Sans',sans-serif;font-weight:700;font-size:0.82rem;border:none;cursor:pointer;transition:all 0.18s;display:flex;align-items:center;justify-content:center;gap:6px;margin-bottom:6px}
+.expbtn:last-child{margin-bottom:0}
 .exp-srt{background:linear-gradient(135deg,var(--accent),var(--accent2));color:white}
 .exp-srt:hover{opacity:0.88;transform:translateY(-1px)}
-.exp-vtt{background:rgba(0,232,122,0.1);border:1px solid rgba(0,232,122,0.2);color:var(--green)}
-.exp-vtt:hover{background:rgba(0,232,122,0.18)}
-.exp-txt{background:var(--panel);border:1px solid var(--border);color:var(--muted)}
+.exp-vtt{background:rgba(0,232,122,0.08);border:1px solid rgba(0,232,122,0.2);color:var(--green)}
+.exp-txt{background:rgba(255,255,255,0.04);border:1px solid var(--border);color:var(--muted)}
 .exp-txt:hover{color:var(--text)}
 
 /* TOAST */
-.toast{position:fixed;bottom:20px;left:50%;transform:translateX(-50%);background:var(--bg3);border:1px solid var(--border);border-radius:100px;padding:8px 18px;font-size:0.8rem;font-family:'DM Mono',monospace;z-index:100;display:none;backdrop-filter:blur(10px);box-shadow:0 4px 20px rgba(0,0,0,0.5)}
-.toast.show{display:block;animation:toastIn 0.2s ease}
-.toast.ok{color:#60ff9a;border-color:rgba(96,255,154,0.2)}
-.toast.err{color:#ff6060;border-color:rgba(255,96,96,0.2)}
-@keyframes toastIn{from{opacity:0;transform:translate(-50%,8px)}to{opacity:1;transform:translate(-50%,0)}}
+.toast{position:fixed;bottom:20px;left:50%;transform:translateX(-50%);padding:8px 18px;border-radius:100px;font-family:'DM Mono',monospace;font-size:0.75rem;z-index:999;display:none;backdrop-filter:blur(12px);border:1px solid var(--border);background:var(--card);box-shadow:0 4px 24px rgba(0,0,0,0.5)}
+.toast.show{display:block;animation:tin 0.2s ease}
+.toast.ok{color:var(--green);border-color:rgba(0,232,122,0.25)}
+.toast.err{color:var(--accent);border-color:rgba(255,61,110,0.25)}
+@keyframes tin{from{opacity:0;transform:translate(-50%,8px)}to{opacity:1;transform:translate(-50%,0)}}
 
-/* Btn utils */
-.btn{display:flex;align-items:center;gap:6px;padding:8px 14px;border-radius:8px;font-family:'Syne',sans-serif;font-weight:700;font-size:0.78rem;border:none;cursor:pointer;transition:all 0.2s}
-.btn-ghost{background:var(--panel);border:1px solid var(--border);color:var(--muted)}
-.btn-ghost:hover{border-color:var(--accent);color:var(--accent)}
+/* MISC */
 .btn-row{display:flex;gap:6px;margin-top:8px}
-.hint{font-size:0.73rem;color:var(--muted);line-height:1.5;margin-top:6px}
-
-/* Caption display mode */
-.display-mode{display:flex;gap:6px}
-.dm-opt{flex:1;padding:7px;text-align:center;border-radius:7px;border:1px solid var(--border);background:var(--panel);cursor:pointer;font-family:'Syne',sans-serif;font-size:0.72rem;font-weight:700;color:var(--muted);transition:all 0.2s}
-.dm-opt:hover,.dm-opt.active{border-color:var(--accent);color:var(--accent);background:rgba(124,107,255,0.1)}
-
-/* Scrollbars */
-.video-area::-webkit-scrollbar{display:none}
+.sbtn{display:flex;align-items:center;gap:5px;padding:7px 12px;border-radius:7px;font-family:'DM Sans',sans-serif;font-weight:600;font-size:0.75rem;border:1px solid var(--border);background:rgba(255,255,255,0.04);color:var(--muted);cursor:pointer;transition:all 0.15s}
+.sbtn:hover{border-color:var(--accent);color:var(--accent)}
+.wlhdr{display:grid;grid-template-columns:1fr 58px 58px 22px;gap:4px;padding:0 7px 4px;font-family:'DM Mono',monospace;font-size:0.6rem;color:var(--muted)}
 </style>
 </head>
 <body>
 
 <header>
-  <div class="logo">AutoCaption Pro ✦</div>
-  <div class="model-status">
-    <div class="status-dot" id="statusDot"></div>
-    <span id="statusText">AI not loaded</span>
+  <div class="logo">AutoCaption Pro</div>
+  <div class="rec-indicator">
+    <div class="rec-dot" id="recDot"></div>
+    <span id="recLabel">Drop a video to begin</span>
   </div>
 </header>
 
 <div class="app">
 
-  <!-- VIDEO + AI BAR -->
-  <div class="video-area">
-    <div class="drop-zone" id="dropZone">
-      <div class="drop-zone-ui" id="dropUI">
-        <div class="drop-icon">🎬</div>
-        <div class="drop-title">Drop your video here</div>
+  <!-- VIDEO SIDE -->
+  <div class="video-side">
+    <div class="video-wrap" id="videoWrap">
+      <div class="drop-msg" id="dropMsg">
+        <div class="drop-emoji">🎬</div>
+        <div class="drop-title">Drop Video Here</div>
         <div class="drop-sub">MP4 · MOV · WebM · Any format</div>
-        <button class="drop-btn" onclick="document.getElementById('videoInput').click()">Choose Video</button>
+        <button class="choose-btn" onclick="document.getElementById('fileInput').click()">Choose File</button>
       </div>
-      <video id="mainVideo" playsinline></video>
-      <div class="caption-overlay" id="captionOverlay"></div>
-      <div class="video-controls" id="videoControls">
-        <button class="play-btn" id="playBtn" onclick="togglePlay()">▶</button>
-        <div class="progress-wrap" id="progressWrap">
-          <div class="progress-fill" id="progressFill"></div>
-        </div>
-        <span class="time-lbl" id="timeLbl">0:00 / 0:00</span>
+      <video id="vid" playsinline></video>
+      <div id="captionBox"></div>
+      <div class="vcontrols" id="vcontrols">
+        <button class="pbtn" id="playBtn" onclick="togglePlay()">▶</button>
+        <div class="pbar" id="pbar"><div class="pfill" id="pfill"></div></div>
+        <span class="tlbl" id="tlbl">0:00 / 0:00</span>
       </div>
     </div>
-    <input type="file" id="videoInput" accept="video/*">
+    <input type="file" id="fileInput" accept="video/*">
 
-    <!-- AI BAR -->
-    <div class="ai-bar">
-      <select class="model-select" id="modelSelect">
-        <option value="Xenova/whisper-tiny.en" selected>⚡ Tiny (Fastest ~40MB)</option>
-        <option value="Xenova/whisper-base">🎯 Base (Accurate ~150MB)</option>
-        <option value="Xenova/whisper-small">🧠 Small (Best ~250MB)</option>
-      </select>
-      <div class="progress-container">
-        <div class="progress-label" id="progressLabel">Ready — drop a video to start</div>
-        <div class="progress-bar-wrap">
-          <div class="progress-bar-fill" id="progressBarFill"></div>
-        </div>
-      </div>
-      <button class="transcribe-btn" id="transcribeBtn" onclick="startTranscription()" disabled>
-        🤖 Auto Caption
-      </button>
+    <!-- ACTION BAR -->
+    <div class="action-bar">
+      <button class="big-btn btn-caption" id="captionBtn" onclick="startCaptioning()" disabled>🎙 LIVE CAPTION</button>
+      <button class="big-btn btn-stop" id="stopBtn" onclick="stopCaptioning()">⏹ STOP</button>
+      <div class="status-msg" id="statusMsg">Drop a video, then click Live Caption to auto-generate captions in real time</div>
     </div>
   </div>
 
-  <!-- SIDE PANEL -->
-  <div class="side-panel">
-    <div class="panel-tabs">
-      <button class="ptab active" onclick="switchPTab('style')">🎨 Style</button>
-      <button class="ptab" onclick="switchPTab('words')">⏱ Words</button>
-      <button class="ptab" onclick="switchPTab('export')">⬇ Export</button>
+  <!-- RIGHT PANEL -->
+  <div class="right-panel">
+    <div class="rtabs">
+      <button class="rtab on" onclick="rtab(this,'style')">Style</button>
+      <button class="rtab" onclick="rtab(this,'words')">Words</button>
+      <button class="rtab" onclick="rtab(this,'export')">Export</button>
     </div>
 
-    <!-- STYLE TAB -->
-    <div class="ptab-content active" id="pt-style">
-
-      <div class="psection">
-        <div class="psec-title">Presets</div>
+    <!-- STYLE -->
+    <div class="rpane on" id="rp-style">
+      <div class="rsec">
+        <div class="rtitle">Presets</div>
         <div class="presets">
-          <div class="preset active" onclick="applyPreset('tiktok')">
-            <div class="preset-name">TikTok</div>
-            <div class="preset-preview">Bold · Yellow hi</div>
-          </div>
-          <div class="preset" onclick="applyPreset('capcut')">
-            <div class="preset-name">CapCut</div>
-            <div class="preset-preview">White · Outline</div>
-          </div>
-          <div class="preset" onclick="applyPreset('youtube')">
-            <div class="preset-name">YouTube</div>
-            <div class="preset-preview">Bar · Clean</div>
-          </div>
-          <div class="preset" onclick="applyPreset('cinematic')">
-            <div class="preset-name">Cinematic</div>
-            <div class="preset-preview">Elegant · Italic</div>
-          </div>
-          <div class="preset" onclick="applyPreset('hype')">
-            <div class="preset-name">Hype</div>
-            <div class="preset-preview">Huge · Impact</div>
-          </div>
-          <div class="preset" onclick="applyPreset('minimal')">
-            <div class="preset-name">Minimal</div>
-            <div class="preset-preview">Shadow · Clean</div>
-          </div>
+          <div class="preset on" onclick="applyPreset(this,'tiktok')"><div class="pname">TikTok</div><div class="psub">Bold · Yellow</div></div>
+          <div class="preset" onclick="applyPreset(this,'capcut')"><div class="pname">CapCut</div><div class="psub">White · Outline</div></div>
+          <div class="preset" onclick="applyPreset(this,'hype')"><div class="pname">Hype</div><div class="psub">Huge · Impact</div></div>
+          <div class="preset" onclick="applyPreset(this,'youtube')"><div class="pname">YouTube</div><div class="psub">Bar · Clean</div></div>
+          <div class="preset" onclick="applyPreset(this,'cinema')"><div class="pname">Cinema</div><div class="psub">Elegant · Serif</div></div>
+          <div class="preset" onclick="applyPreset(this,'minimal')"><div class="pname">Minimal</div><div class="psub">Shadow · Thin</div></div>
         </div>
       </div>
 
-      <div class="psection">
-        <div class="psec-title">Display Mode</div>
-        <div class="display-mode">
-          <div class="dm-opt active" data-mode="highlight" onclick="selectMode(this)">Highlight</div>
-          <div class="dm-opt" data-mode="karaoke" onclick="selectMode(this)">Karaoke</div>
-          <div class="dm-opt" data-mode="word" onclick="selectMode(this)">One Word</div>
+      <div class="rsec">
+        <div class="rtitle">Display</div>
+        <div class="modes">
+          <div class="mode on" data-mode="highlight" onclick="setMode(this)">Highlight</div>
+          <div class="mode" data-mode="karaoke" onclick="setMode(this)">Karaoke</div>
+          <div class="mode" data-mode="oneword" onclick="setMode(this)">One Word</div>
         </div>
-        <p class="hint" style="margin-top:6px">
-          <b style="color:var(--accent)">Highlight</b> = all words, active glows. <b style="color:var(--accent)">Karaoke</b> = line by line. <b style="color:var(--accent)">One Word</b> = single word pops.
-        </p>
       </div>
 
-      <div class="psection">
-        <div class="psec-title">Typography</div>
-        <div class="ctrl"><label>FONT</label>
-          <select id="fontFamily" onchange="updateStyle()">
-            <option value="'Syne',sans-serif">Syne — Bold Display</option>
+      <div class="rsec">
+        <div class="rtitle">Typography</div>
+        <div class="ctrl"><span class="clabel">FONT</span>
+          <select id="cFont" onchange="applyStyle()">
+            <option value="'Bebas Neue',sans-serif">Bebas Neue — Bold</option>
             <option value="'DM Sans',sans-serif">DM Sans — Modern</option>
-            <option value="Impact,sans-serif">Impact — Dramatic</option>
+            <option value="Impact,sans-serif">Impact — Heavy</option>
             <option value="Georgia,serif">Georgia — Serif</option>
             <option value="'Courier New',monospace">Courier — Retro</option>
-            <option value="'Arial Black',sans-serif">Arial Black — Heavy</option>
           </select>
         </div>
-        <div class="ctrl"><label>SIZE</label>
-          <div class="row"><input type="range" id="fontSize" min="16" max="72" value="32" oninput="updateStyle()"><span class="val" id="fontSizeV">32px</span></div>
+        <div class="ctrl"><span class="clabel">SIZE</span>
+          <div class="crow"><input type="range" id="cSize" min="16" max="80" value="36" oninput="applyStyle()"><span class="cval" id="cSizeV">36px</span></div>
         </div>
-        <div class="ctrl"><label>WEIGHT</label>
-          <select id="fontWeight" onchange="updateStyle()">
+        <div class="ctrl"><span class="clabel">WEIGHT</span>
+          <select id="cWeight" onchange="applyStyle()">
             <option value="400">Regular</option><option value="600">Semi Bold</option>
             <option value="700" selected>Bold</option><option value="800">Extra Bold</option><option value="900">Black</option>
           </select>
         </div>
       </div>
 
-      <div class="psection">
-        <div class="psec-title">Colors</div>
-        <div class="ctrl"><label>TEXT COLOR</label>
-          <div class="row"><input type="color" id="wordColor" value="#ffffff" oninput="updateStyle()"><span id="wordColorV" style="font-size:0.72rem;color:var(--muted)">#ffffff</span></div>
+      <div class="rsec">
+        <div class="rtitle">Colors</div>
+        <div class="ctrl"><span class="clabel">TEXT</span>
+          <div class="crow"><input type="color" id="cText" value="#ffffff" oninput="applyStyle()"><span style="font-size:0.7rem;color:var(--muted);margin-left:4px" id="cTextV">#ffffff</span></div>
         </div>
-        <div class="ctrl"><label>HIGHLIGHT</label>
-          <div class="row"><input type="color" id="hlColor" value="#ffdd00" oninput="updateStyle()"><span id="hlColorV" style="font-size:0.72rem;color:var(--muted)">#ffdd00</span></div>
+        <div class="ctrl"><span class="clabel">HIGHLIGHT</span>
+          <div class="crow"><input type="color" id="cHL" value="#ffb800" oninput="applyStyle()"><span style="font-size:0.7rem;color:var(--muted);margin-left:4px" id="cHLV">#ffb800</span></div>
         </div>
-        <div class="ctrl"><label>BACKGROUND</label>
-          <select id="bgStyle" onchange="updateStyle()">
-            <option value="none">None</option>
-            <option value="shadow">Shadow</option>
-            <option value="box" selected>Box</option>
-            <option value="bar">Full Bar</option>
-            <option value="outline">Outline</option>
+        <div class="ctrl"><span class="clabel">BACKGROUND</span>
+          <select id="cBG" onchange="applyStyle()">
+            <option value="none">None</option><option value="shadow">Shadow</option>
+            <option value="box" selected>Box</option><option value="bar">Full Bar</option><option value="outline">Outline</option>
           </select>
         </div>
-        <div class="ctrl"><label>BG COLOR & OPACITY</label>
-          <div class="row">
-            <input type="color" id="bgColor" value="#000000" oninput="updateStyle()">
-            <input type="range" id="bgOpacity" min="0" max="100" value="75" oninput="updateStyle()" style="flex:1">
-            <span class="val" id="bgOpacityV">75%</span>
+        <div class="ctrl"><span class="clabel">BG COLOR & OPACITY</span>
+          <div class="crow">
+            <input type="color" id="cBGCol" value="#000000" oninput="applyStyle()">
+            <input type="range" id="cBGOp" min="0" max="100" value="72" oninput="applyStyle()">
+            <span class="cval" id="cBGOpV">72%</span>
           </div>
         </div>
       </div>
 
-      <div class="psection">
-        <div class="psec-title">Animation</div>
-        <div class="anim-grid">
-          <div class="anim-opt active" data-anim="pop" onclick="selectAnim(this)">🫧 Pop</div>
-          <div class="anim-opt" data-anim="bounce" onclick="selectAnim(this)">🏀 Bounce</div>
-          <div class="anim-opt" data-anim="fade" onclick="selectAnim(this)">✨ Fade</div>
-          <div class="anim-opt" data-anim="slide" onclick="selectAnim(this)">→ Slide</div>
-          <div class="anim-opt" data-anim="zoom" onclick="selectAnim(this)">🔍 Zoom</div>
-          <div class="anim-opt" data-anim="none" onclick="selectAnim(this)">— None</div>
+      <div class="rsec">
+        <div class="rtitle">Animation</div>
+        <div class="anims">
+          <div class="animopt on" data-anim="pop" onclick="setAnim(this)">🫧 Pop</div>
+          <div class="animopt" data-anim="bounce" onclick="setAnim(this)">🏀 Bounce</div>
+          <div class="animopt" data-anim="fade" onclick="setAnim(this)">✨ Fade</div>
+          <div class="animopt" data-anim="slide" onclick="setAnim(this)">→ Slide</div>
+          <div class="animopt" data-anim="zoom" onclick="setAnim(this)">🔍 Zoom</div>
+          <div class="animopt" data-anim="none" onclick="setAnim(this)">— None</div>
         </div>
       </div>
 
-      <div class="psection">
-        <div class="psec-title">Position</div>
-        <div class="pos-grid" id="posGrid">
-          <div class="pos-cell" data-pos="tl"></div><div class="pos-cell" data-pos="tc"></div><div class="pos-cell" data-pos="tr"></div>
-          <div class="pos-cell" data-pos="ml"></div><div class="pos-cell" data-pos="mc"></div><div class="pos-cell" data-pos="mr"></div>
-          <div class="pos-cell" data-pos="bl"></div><div class="pos-cell active" data-pos="bc"></div><div class="pos-cell" data-pos="br"></div>
+      <div class="rsec">
+        <div class="rtitle">Position</div>
+        <div class="posgrid" id="posgrid">
+          <div class="poscell" data-p="tl"></div><div class="poscell" data-p="tc"></div><div class="poscell" data-p="tr"></div>
+          <div class="poscell" data-p="ml"></div><div class="poscell" data-p="mc"></div><div class="poscell" data-p="mr"></div>
+          <div class="poscell" data-p="bl"></div><div class="poscell on" data-p="bc"></div><div class="poscell" data-p="br"></div>
         </div>
       </div>
     </div>
 
-    <!-- WORDS TAB -->
-    <div class="ptab-content" id="pt-words">
-      <div class="psection" style="flex:1">
-        <div class="psec-title">Word Timing Editor</div>
-        <div class="wl-header"><span>Word</span><span>Start</span><span>End</span><span></span></div>
-        <div class="word-list" id="wordList">
-          <div style="color:var(--muted);font-size:0.8rem;text-align:center;padding:20px">Transcribe video first</div>
-        </div>
+    <!-- WORDS -->
+    <div class="rpane" id="rp-words">
+      <div class="rsec" style="flex:1">
+        <div class="rtitle">Word Timing</div>
+        <div class="wlhdr"><span>Word</span><span>Start</span><span>End</span></div>
+        <div class="wordlist" id="wordList"><div style="color:var(--muted);font-size:0.78rem;text-align:center;padding:16px">Caption video first</div></div>
         <div class="btn-row">
-          <button class="btn btn-ghost" onclick="autoDistribute()">⚡ Auto</button>
-          <button class="btn btn-ghost" onclick="addWord()">+ Word</button>
-          <button class="btn btn-ghost" onclick="clearWords()">🗑 Clear</button>
+          <button class="sbtn" onclick="autoDistrib()">⚡ Auto</button>
+          <button class="sbtn" onclick="addWrd()">+ Add</button>
+          <button class="sbtn" onclick="clearWrds()">🗑 Clear</button>
         </div>
       </div>
     </div>
 
-    <!-- EXPORT TAB -->
-    <div class="ptab-content" id="pt-export">
-      <div class="psection">
-        <div class="psec-title">Export Captions</div>
-        <button class="exp-btn exp-srt" onclick="exportSRT()">⬇️ Download SRT (Premiere, DaVinci)</button>
-        <button class="exp-btn exp-vtt" onclick="exportVTT()">⬇️ Download VTT (Web, YouTube)</button>
-        <button class="exp-btn exp-txt" onclick="exportTXT()">📄 Plain Text Transcript</button>
+    <!-- EXPORT -->
+    <div class="rpane" id="rp-export">
+      <div class="rsec">
+        <div class="rtitle">Download</div>
+        <button class="expbtn exp-srt" onclick="exportSRT()">⬇ SRT — Premiere / DaVinci / CapCut</button>
+        <button class="expbtn exp-vtt" onclick="exportVTT()">⬇ VTT — YouTube / Web</button>
+        <button class="expbtn exp-txt" onclick="exportTXT()">📄 Plain Text Transcript</button>
       </div>
-      <div class="psection">
-        <div class="psec-title">Stats</div>
-        <div id="statsPanel" style="font-family:'DM Mono',monospace;font-size:0.75rem;color:var(--muted);line-height:2">
-          No captions yet
-        </div>
+      <div class="rsec">
+        <div class="rtitle">Stats</div>
+        <div id="stats" style="font-family:'DM Mono',monospace;font-size:0.72rem;color:var(--muted);line-height:2.2">No captions yet</div>
       </div>
     </div>
   </div>
@@ -376,504 +324,383 @@ input[type=color]{-webkit-appearance:none;width:30px;height:30px;border:2px soli
 <div class="toast" id="toast"></div>
 
 <script>
-// ─── WEB WORKER (loaded from worker.js — same origin, no blob needed) ──────
-let worker = null;
-let workerReady = false;
-
-// ─── STATE ──────────────────────────────────────────────────────────────────
-window.words = [];   // [{word, start, end}]
-window.animStyle = 'pop';
-window.displayMode = 'highlight';
-window.captionPos = 'bc';
-window.currentStyle = {
-  fontFamily: "'Syne',sans-serif", fontSize: 32, fontWeight: 700,
-  wordColor: '#ffffff', hlColor: '#ffdd00',
-  bgStyle: 'box', bgColor: '#000000', bgOpacity: 75
-};
-
-const video = document.getElementById('mainVideo');
-const overlay = document.getElementById('captionOverlay');
-
-// ─── INIT WORKER ────────────────────────────────────────────────────────────
-function initWorker() {
-  if (worker) worker.terminate();
-  worker = new Worker('./worker.js');
-  workerReady = false;
-  document.getElementById('transcribeBtn').disabled = true;
-
-  worker.onmessage = (e) => {
-    const { type } = e.data;
-    if (type === 'dl_progress') {
-      const pct = Math.round(e.data.progress || 0);
-      setProgress(pct, `Downloading model... ${pct}%`);
-    } else if (type === 'ready') {
-      workerReady = true;
-      dot('ready'); setStatus('AI Ready ✓');
-      setProgress(100, 'Model ready — drop a video and click Auto Caption');
-      document.getElementById('transcribeBtn').disabled = !videoLoaded;
-      toast('AI model loaded! Drop a video and click Auto Caption.', 'ok');
-    } else if (type === 'result') {
-      handleTranscriptionResult(e.data.result);
-    } else if (type === 'error') {
-      toast('Error: ' + e.data.error, 'err');
-      setProgress(0, 'Error — try again');
-      dot(''); setStatus('Error');
-      document.getElementById('transcribeBtn').disabled = false;
-    }
-  };
-
-  dot('loading'); setStatus('Loading AI model...');
-  setProgress(5, 'Starting download...');
-  worker.postMessage({ type: 'load', model: document.getElementById('modelSelect').value });
-}
-
-document.getElementById('modelSelect').onchange = () => initWorker();
-
-// Load model on page load
-initWorker();
-
-// ─── VIDEO HANDLING ─────────────────────────────────────────────────────────
+// ── STATE ───────────────────────────────────────────────────────────────────
+let words = [];
+let animStyle = 'pop';
+let displayMode = 'highlight';
+let captionPos = 'bc';
+let S = { font:"'Bebas Neue',sans-serif", size:36, weight:700, text:'#ffffff', hl:'#ffb800', bg:'box', bgcol:'#000000', bgop:72 };
+let recognition = null;
+let isListening = false;
 let videoLoaded = false;
-let videoFile = null;
+let startTime = 0;
 
-const dropZone = document.getElementById('dropZone');
-dropZone.addEventListener('click', (e) => {
-  if (!videoLoaded && !e.target.closest('button, select')) {
-    document.getElementById('videoInput').click();
-  }
-});
-dropZone.addEventListener('dragover', e => { e.preventDefault(); dropZone.style.background = 'rgba(124,107,255,0.06)'; });
-dropZone.addEventListener('dragleave', () => dropZone.style.background = '');
-dropZone.addEventListener('drop', e => {
-  e.preventDefault(); dropZone.style.background = '';
-  const f = e.dataTransfer.files[0];
-  if (f && f.type.startsWith('video/')) loadVideo(f);
-});
-document.getElementById('videoInput').addEventListener('change', e => {
-  if (e.target.files[0]) loadVideo(e.target.files[0]);
-});
+const vid = document.getElementById('vid');
+const box = document.getElementById('captionBox');
+
+// ── VIDEO ───────────────────────────────────────────────────────────────────
+const wrap = document.getElementById('videoWrap');
+wrap.addEventListener('dragover', e => { e.preventDefault(); wrap.style.outline = '2px dashed var(--accent)'; });
+wrap.addEventListener('dragleave', () => wrap.style.outline = '');
+wrap.addEventListener('drop', e => { e.preventDefault(); wrap.style.outline = ''; const f = e.dataTransfer.files[0]; if (f && f.type.startsWith('video/')) loadVideo(f); });
+wrap.addEventListener('click', e => { if (!videoLoaded && !e.target.closest('button')) document.getElementById('fileInput').click(); });
+document.getElementById('fileInput').addEventListener('change', e => { if (e.target.files[0]) loadVideo(e.target.files[0]); });
 
 function loadVideo(file) {
-  videoFile = file;
-  const url = URL.createObjectURL(file);
-  video.src = url;
-  video.style.display = 'block';
-  document.getElementById('dropUI').style.display = 'none';
-  document.getElementById('videoControls').classList.add('pinned');
+  vid.src = URL.createObjectURL(file);
+  vid.style.display = 'block';
+  document.getElementById('dropMsg').style.display = 'none';
+  document.getElementById('vcontrols').classList.add('show');
   videoLoaded = true;
-  if (workerReady) document.getElementById('transcribeBtn').disabled = false;
-  setProgress(0, `Video loaded: ${file.name} — Click "Auto Caption"`);
-  toast('Video loaded! Click "🤖 Auto Caption" to start.', 'ok');
+  document.getElementById('captionBtn').disabled = false;
+  setStatus('Video loaded! Click 🎙 LIVE CAPTION — play audio out loud and speak along, or just let the video play.');
+  toast('Video loaded! Hit LIVE CAPTION to start.', 'ok');
 }
 
-video.addEventListener('timeupdate', () => {
-  if (!video.duration) return;
-  const pct = (video.currentTime / video.duration) * 100;
-  document.getElementById('progressFill').style.width = pct + '%';
-  document.getElementById('timeLbl').textContent = `${fmt(video.currentTime)} / ${fmt(video.duration)}`;
+vid.addEventListener('timeupdate', () => {
+  if (!vid.duration) return;
+  document.getElementById('pfill').style.width = (vid.currentTime / vid.duration * 100) + '%';
+  document.getElementById('tlbl').textContent = `${fmt(vid.currentTime)} / ${fmt(vid.duration)}`;
   updateCaptions();
 });
 
-document.getElementById('progressWrap').addEventListener('click', e => {
-  const r = e.target.closest('.progress-wrap').getBoundingClientRect();
-  video.currentTime = ((e.clientX - r.left) / r.width) * video.duration;
+document.getElementById('pbar').addEventListener('click', e => {
+  const r = e.target.closest('.pbar').getBoundingClientRect();
+  vid.currentTime = ((e.clientX - r.left) / r.width) * vid.duration;
 });
 
-window.togglePlay = function() {
-  if (video.paused) { video.play(); document.getElementById('playBtn').textContent = '⏸'; }
-  else { video.pause(); document.getElementById('playBtn').textContent = '▶'; }
-};
-
-// ─── TRANSCRIPTION ──────────────────────────────────────────────────────────
-window.startTranscription = async function() {
-  if (!videoFile || !workerReady) return;
-  document.getElementById('transcribeBtn').disabled = true;
-  dot('loading'); setStatus('Transcribing...');
-  setProgress(10, 'Extracting audio from video...');
-  try {
-    const audio = await extractAudio(videoFile);
-    setProgress(25, 'Running Whisper AI in background — page stays responsive...');
-    worker.postMessage({ type: 'transcribe', audio }, [audio.buffer]);
-  } catch(err) {
-    toast('Audio extraction failed: ' + err.message, 'err');
-    setProgress(0, 'Error'); dot('ready'); setStatus('AI Ready ✓');
-    document.getElementById('transcribeBtn').disabled = false;
-  }
-};
-
-async function extractAudio(file) {
-  setProgress(15, 'Decoding audio...');
-  const arrayBuffer = await file.arrayBuffer();
-  const ctx = new (window.AudioContext || window.webkitAudioContext)({ sampleRate: 16000 });
-  const audioBuffer = await ctx.decodeAudioData(arrayBuffer);
-  ctx.close();
-
-  const nCh = audioBuffer.numberOfChannels;
-  const len = audioBuffer.length;
-  const mono = new Float32Array(len);
-  for (let i = 0; i < len; i++) {
-    let s = 0;
-    for (let c = 0; c < nCh; c++) s += audioBuffer.getChannelData(c)[i];
-    mono[i] = s / nCh;
-  }
-  return mono;
+function togglePlay() {
+  if (vid.paused) { vid.play(); document.getElementById('playBtn').textContent = '⏸'; }
+  else { vid.pause(); document.getElementById('playBtn').textContent = '▶'; }
 }
 
-function handleTranscriptionResult(result) {
-  setProgress(100, 'Transcription complete!');
-  dot('ready'); setStatus('AI Ready ✓');
+// ── SPEECH RECOGNITION ──────────────────────────────────────────────────────
+function startCaptioning() {
+  const SR = window.SpeechRecognition || window.webkitSpeechRecognition;
+  if (!SR) { toast('Speech recognition not supported. Use Chrome!', 'err'); return; }
 
-  // Parse word-level timestamps
-  const chunks = result.chunks || [];
-  if (chunks.length === 0 && result.text) {
-    // Fallback: distribute words evenly
-    const ws = result.text.trim().split(/\s+/);
-    const dur = video.duration || ws.length * 0.4;
-    const per = dur / ws.length;
-    window.words = ws.map((w, i) => ({ word: w, start: i * per, end: (i + 1) * per }));
-  } else {
-    window.words = chunks
-      .filter(c => c.text && c.text.trim())
-      .map(c => ({
-        word: c.text.trim(),
-        start: c.timestamp[0] || 0,
-        end: c.timestamp[1] || (c.timestamp[0] + 0.4)
-      }));
-  }
-
+  words = [];
   renderWordList();
-  renderOverlay();
-  updateStats();
-  document.getElementById('transcribeBtn').disabled = false;
-  toast(`✅ ${window.words.length} words transcribed!`, 'ok');
+  renderCaptions();
 
-  // Switch to words tab
-  switchPTab('words');
+  recognition = new SR();
+  recognition.continuous = true;
+  recognition.interimResults = true;
+  recognition.lang = 'en-US';
+  recognition.maxAlternatives = 1;
+
+  startTime = vid.currentTime || 0;
+  let sessionStart = Date.now();
+
+  recognition.onstart = () => {
+    isListening = true;
+    document.getElementById('captionBtn').style.display = 'none';
+    document.getElementById('stopBtn').style.display = 'flex';
+    document.getElementById('recDot').className = 'rec-dot live';
+    document.getElementById('recLabel').textContent = 'Listening...';
+    setStatus('🔴 Listening! Speak or play audio aloud — captions appear in real time.');
+    // Auto-play video
+    vid.play().catch(()=>{});
+    document.getElementById('playBtn').textContent = '⏸';
+  };
+
+  recognition.onresult = (e) => {
+    const elapsed = (Date.now() - sessionStart) / 1000;
+
+    for (let i = e.resultIndex; i < e.results.length; i++) {
+      const result = e.results[i];
+      const transcript = result[0].transcript.trim();
+      if (!transcript) continue;
+
+      if (result.isFinal) {
+        const ws = transcript.split(/\s+/);
+        const tPerWord = elapsed / Math.max(words.length + ws.length, 1);
+        ws.forEach((w, idx) => {
+          const t = startTime + (words.length + idx) * tPerWord;
+          words.push({ word: w, start: parseFloat(t.toFixed(2)), end: parseFloat((t + tPerWord * 0.9).toFixed(2)) });
+        });
+        renderWordList();
+        renderCaptions();
+        updateStats();
+      }
+    }
+  };
+
+  recognition.onerror = (e) => {
+    if (e.error !== 'aborted') {
+      toast('Mic error: ' + e.error + '. Allow mic access in browser.', 'err');
+      stopCaptioning();
+    }
+  };
+
+  recognition.onend = () => {
+    if (isListening) recognition.start(); // keep running
+  };
+
+  recognition.start();
 }
 
-// ─── CAPTION RENDERING ──────────────────────────────────────────────────────
-function renderOverlay() {
-  overlay.innerHTML = '';
-  if (!window.words.length) return;
+function stopCaptioning() {
+  isListening = false;
+  if (recognition) { recognition.onend = null; recognition.stop(); recognition = null; }
+  document.getElementById('captionBtn').style.display = 'flex';
+  document.getElementById('stopBtn').style.display = 'none';
+  document.getElementById('recDot').className = 'rec-dot ready';
+  document.getElementById('recLabel').textContent = 'Done';
+  setStatus(`✅ ${words.length} words captured. Fine-tune timing in the Words tab, then export.`);
+  if (words.length) {
+    syncTimingsToVideo();
+    renderWordList();
+    renderCaptions();
+    toast(`${words.length} words captured!`, 'ok');
+    rtab(document.querySelectorAll('.rtab')[1], 'words');
+  }
+}
 
-  if (window.displayMode === 'word') {
-    // Single word display — just one span, updated dynamically
-    const span = document.createElement('span');
-    span.id = 'single-word';
-    span.className = 'caption-word';
-    applyWordStyle(span, false);
-    overlay.appendChild(span);
+// Sync word timings to actual video playback position
+function syncTimingsToVideo() {
+  if (!words.length || !vid.duration) return;
+  const dur = vid.duration * 0.95;
+  const perWord = dur / words.length;
+  words = words.map((w, i) => ({ ...w, start: parseFloat((i * perWord).toFixed(2)), end: parseFloat(((i + 1) * perWord).toFixed(2)) }));
+}
+
+// ── CAPTION RENDERING ────────────────────────────────────────────────────────
+function renderCaptions() {
+  box.innerHTML = '';
+  if (!words.length) return;
+
+  if (displayMode === 'oneword') {
+    const sp = document.createElement('span');
+    sp.id = 'ow'; sp.className = 'cword';
+    styleWord(sp, false); box.appendChild(sp);
   } else {
-    // All words rendered
-    window.words.forEach((w, i) => {
-      const span = document.createElement('span');
-      span.className = 'caption-word';
-      span.id = `cw-${i}`;
-      span.textContent = w.word;
-      applyWordStyle(span, false);
-      overlay.appendChild(span);
+    words.forEach((w, i) => {
+      const sp = document.createElement('span');
+      sp.className = 'cword'; sp.id = `cw${i}`; sp.textContent = w.word;
+      styleWord(sp, false); box.appendChild(sp);
     });
   }
-
-  applyPosition();
+  positionBox();
 }
 
 function updateCaptions() {
-  if (!window.words.length) return;
-  const t = video.currentTime;
-  const mode = window.displayMode;
+  if (!words.length) return;
+  const t = vid.currentTime;
 
-  if (mode === 'word') {
-    const sw = document.getElementById('single-word');
-    if (!sw) return;
-    const cur = window.words.find(w => t >= w.start && t < w.end);
-    if (cur) {
-      if (sw.textContent !== cur.word) {
-        sw.textContent = cur.word;
-        applyWordStyle(sw, true);
-        triggerAnim(sw);
-      }
-    } else {
-      sw.textContent = '';
-    }
+  if (displayMode === 'oneword') {
+    const el = document.getElementById('ow'); if (!el) return;
+    const cur = words.find(w => t >= w.start && t < w.end);
+    if (cur) { if (el.textContent !== cur.word) { el.textContent = cur.word; styleWord(el, true); trigAnim(el); } }
+    else el.textContent = '';
     return;
   }
 
-  if (mode === 'karaoke') {
-    // Find current line (group of ~5 words)
-    const curIdx = window.words.findIndex(w => t >= w.start && t < w.end);
-    const lineSize = 5;
-    const lineStart = curIdx >= 0 ? Math.floor(curIdx / lineSize) * lineSize : -1;
-
-    window.words.forEach((w, i) => {
-      const el = document.getElementById(`cw-${i}`);
-      if (!el) return;
-      const inLine = i >= lineStart && i < lineStart + lineSize;
-      const isActive = t >= w.start && t < w.end;
-
-      el.style.display = (lineStart < 0 || inLine) ? 'inline-block' : 'none';
-      const wasActive = el.dataset.active === '1';
-      if (isActive !== wasActive) {
-        el.dataset.active = isActive ? '1' : '0';
-        applyWordStyle(el, isActive);
-        if (isActive) triggerAnim(el);
-      }
+  if (displayMode === 'karaoke') {
+    const ci = words.findIndex(w => t >= w.start && t < w.end);
+    const ls = ci >= 0 ? Math.floor(ci / 5) * 5 : -1;
+    words.forEach((w, i) => {
+      const el = document.getElementById(`cw${i}`); if (!el) return;
+      el.style.display = (ls < 0 || (i >= ls && i < ls + 5)) ? 'inline-block' : 'none';
+      const act = t >= w.start && t < w.end;
+      if (act !== (el.dataset.a === '1')) { el.dataset.a = act ? '1' : '0'; styleWord(el, act); if (act) trigAnim(el); }
     });
     return;
   }
 
-  // Highlight mode
-  window.words.forEach((w, i) => {
-    const el = document.getElementById(`cw-${i}`);
-    if (!el) return;
-    const isActive = t >= w.start && t < w.end;
-    const isPast = t >= w.end;
-    const wasActive = el.dataset.active === '1';
-    if (isActive !== wasActive) {
-      el.dataset.active = isActive ? '1' : '0';
-      applyWordStyle(el, isActive);
-      el.classList.toggle('past', !isActive && isPast);
-      if (isActive) triggerAnim(el);
+  words.forEach((w, i) => {
+    const el = document.getElementById(`cw${i}`); if (!el) return;
+    const act = t >= w.start && t < w.end;
+    const past = t >= w.end;
+    if (act !== (el.dataset.a === '1')) {
+      el.dataset.a = act ? '1' : '0';
+      styleWord(el, act);
+      el.classList.toggle('past', !act && past);
+      if (act) trigAnim(el);
     }
   });
 }
 
-function applyWordStyle(el, isActive) {
-  const s = window.currentStyle;
-  el.style.fontFamily = s.fontFamily;
-  el.style.fontSize = s.fontSize + 'px';
-  el.style.fontWeight = s.fontWeight;
-  el.style.color = isActive ? s.hlColor : s.wordColor;
-  el.style.lineHeight = '1.3';
-
-  const r = parseInt(s.bgColor.slice(1,3),16);
-  const g = parseInt(s.bgColor.slice(3,5),16);
-  const b = parseInt(s.bgColor.slice(5,7),16);
-  const a = s.bgOpacity / 100;
-
-  el.style.webkitTextStroke = '';
-  el.style.textShadow = '';
-
-  switch(s.bgStyle) {
+function styleWord(el, active) {
+  el.style.fontFamily = S.font;
+  el.style.fontSize = S.size + 'px';
+  el.style.fontWeight = S.weight;
+  el.style.color = active ? S.hl : S.text;
+  el.style.lineHeight = '1.25';
+  const [r, g, b] = [S.bgcol.slice(1,3), S.bgcol.slice(3,5), S.bgcol.slice(5,7)].map(h => parseInt(h, 16));
+  const a = S.bgop / 100;
+  el.style.webkitTextStroke = ''; el.style.textShadow = '';
+  switch (S.bg) {
     case 'none': el.style.background='none'; el.style.padding='2px 0'; el.style.borderRadius='0'; break;
-    case 'shadow': el.style.background='none'; el.style.textShadow=`0 2px 8px rgba(0,0,0,0.95), 0 0 20px rgba(0,0,0,0.8)`; el.style.padding='2px 0'; el.style.borderRadius='0'; break;
-    case 'box': el.style.background=`rgba(${r},${g},${b},${a})`; el.style.padding='3px 9px'; el.style.borderRadius='6px'; break;
+    case 'shadow': el.style.background='none'; el.style.textShadow=`0 2px 8px rgba(0,0,0,0.95),0 0 24px rgba(0,0,0,0.7)`; el.style.padding='2px 0'; el.style.borderRadius='0'; break;
+    case 'box': el.style.background=`rgba(${r},${g},${b},${a})`; el.style.padding='3px 10px'; el.style.borderRadius='6px'; break;
     case 'bar': el.style.background=`rgba(${r},${g},${b},${a})`; el.style.padding='4px 6px'; el.style.borderRadius='0'; break;
     case 'outline': el.style.background='none'; el.style.webkitTextStroke=`2px rgba(${r},${g},${b},${Math.min(a*2,1)})`; el.style.textShadow=`0 2px 6px rgba(${r},${g},${b},${a})`; el.style.padding='2px 4px'; el.style.borderRadius='0'; break;
   }
 }
 
-function triggerAnim(el) {
-  if (window.animStyle === 'none') return;
-  el.style.animation = 'none';
-  el.offsetHeight;
-  const anims = {
-    pop: 'wPop 0.2s cubic-bezier(0.34,1.56,0.64,1)',
-    bounce: 'wBounce 0.4s ease',
-    fade: 'wFade 0.2s ease',
-    slide: 'wSlide 0.22s ease',
-    zoom: 'wZoom 0.25s cubic-bezier(0.34,1.56,0.64,1)',
-  };
-  el.style.animation = anims[window.animStyle] || '';
+function trigAnim(el) {
+  if (animStyle === 'none') return;
+  el.style.animation = 'none'; el.offsetHeight;
+  const a = { pop:'wPop 0.18s cubic-bezier(0.34,1.56,0.64,1)', bounce:'wBounce 0.35s ease', fade:'wFade 0.18s ease', slide:'wSlide 0.2s ease', zoom:'wZoom 0.22s cubic-bezier(0.34,1.56,0.64,1)' };
+  el.style.animation = a[animStyle] || '';
 }
 
-function applyPosition() {
-  const p = window.captionPos;
-  overlay.style.top = p.startsWith('t') ? '8%' : (p.startsWith('m') ? '50%' : 'auto');
-  overlay.style.bottom = p.startsWith('b') ? '12%' : 'auto';
-  overlay.style.left = p.endsWith('r') ? 'auto' : (p.endsWith('l') ? '5%' : '50%');
-  overlay.style.right = p.endsWith('r') ? '5%' : 'auto';
-  overlay.style.transform = p === 'mc' ? 'translate(-50%,-50%)' : (p.endsWith('c') ? 'translateX(-50%)' : (p.startsWith('m') ? 'translateY(-50%)' : ''));
-  overlay.style.textAlign = p.endsWith('l') ? 'left' : (p.endsWith('r') ? 'right' : 'center');
-  overlay.style.justifyContent = p.endsWith('l') ? 'flex-start' : (p.endsWith('r') ? 'flex-end' : 'center');
-  overlay.style.alignItems = 'flex-end';
+function positionBox() {
+  const p = captionPos;
+  box.style.top = p[0]==='t' ? '8%' : p[0]==='m' ? '50%' : 'auto';
+  box.style.bottom = p[0]==='b' ? '12%' : 'auto';
+  box.style.left = p[1]==='r' ? 'auto' : p[1]==='l' ? '5%' : '50%';
+  box.style.right = p[1]==='r' ? '5%' : 'auto';
+  box.style.transform = p==='mc' ? 'translate(-50%,-50%)' : p[1]==='c' ? 'translateX(-50%)' : p[0]==='m' ? 'translateY(-50%)' : '';
+  box.style.textAlign = p[1]==='l' ? 'left' : p[1]==='r' ? 'right' : 'center';
+  box.style.justifyContent = p[1]==='l' ? 'flex-start' : p[1]==='r' ? 'flex-end' : 'center';
 }
 
-// ─── STYLE CONTROLS ─────────────────────────────────────────────────────────
-window.updateStyle = function() {
-  window.currentStyle = {
-    fontFamily: document.getElementById('fontFamily').value,
-    fontSize: +document.getElementById('fontSize').value,
-    fontWeight: +document.getElementById('fontWeight').value,
-    wordColor: document.getElementById('wordColor').value,
-    hlColor: document.getElementById('hlColor').value,
-    bgStyle: document.getElementById('bgStyle').value,
-    bgColor: document.getElementById('bgColor').value,
-    bgOpacity: +document.getElementById('bgOpacity').value,
+// ── CONTROLS ─────────────────────────────────────────────────────────────────
+function applyStyle() {
+  S = {
+    font: document.getElementById('cFont').value,
+    size: +document.getElementById('cSize').value,
+    weight: +document.getElementById('cWeight').value,
+    text: document.getElementById('cText').value,
+    hl: document.getElementById('cHL').value,
+    bg: document.getElementById('cBG').value,
+    bgcol: document.getElementById('cBGCol').value,
+    bgop: +document.getElementById('cBGOp').value,
   };
-  document.getElementById('fontSizeV').textContent = window.currentStyle.fontSize + 'px';
-  document.getElementById('wordColorV').textContent = window.currentStyle.wordColor;
-  document.getElementById('hlColorV').textContent = window.currentStyle.hlColor;
-  document.getElementById('bgOpacityV').textContent = window.currentStyle.bgOpacity + '%';
-  renderOverlay();
-};
+  document.getElementById('cSizeV').textContent = S.size + 'px';
+  document.getElementById('cTextV').textContent = S.text;
+  document.getElementById('cHLV').textContent = S.hl;
+  document.getElementById('cBGOpV').textContent = S.bgop + '%';
+  renderCaptions();
+}
 
-window.selectAnim = function(el) {
-  document.querySelectorAll('.anim-opt').forEach(a => a.classList.remove('active'));
-  el.classList.add('active');
-  window.animStyle = el.dataset.anim;
-};
-
-window.selectMode = function(el) {
-  document.querySelectorAll('.dm-opt').forEach(a => a.classList.remove('active'));
-  el.classList.add('active');
-  window.displayMode = el.dataset.mode;
-  renderOverlay();
-};
-
-document.querySelectorAll('.pos-cell').forEach(c => {
-  c.addEventListener('click', function() {
-    document.querySelectorAll('.pos-cell').forEach(x => x.classList.remove('active'));
-    this.classList.add('active');
-    window.captionPos = this.dataset.pos;
-    applyPosition();
-  });
-});
-
-// ─── PRESETS ────────────────────────────────────────────────────────────────
 const PRESETS = {
-  tiktok: { fontFamily:"'Syne',sans-serif", fontSize:34, fontWeight:800, wordColor:'#ffffff', hlColor:'#ffdd00', bgStyle:'box', bgColor:'#000000', bgOpacity:70 },
-  capcut: { fontFamily:"'Arial Black',sans-serif", fontSize:30, fontWeight:900, wordColor:'#ffffff', hlColor:'#00ddff', bgStyle:'outline', bgColor:'#000000', bgOpacity:80 },
-  youtube: { fontFamily:"'DM Sans',sans-serif", fontSize:26, fontWeight:600, wordColor:'#ffffff', hlColor:'#ffffff', bgStyle:'bar', bgColor:'#000000', bgOpacity:85 },
-  cinematic: { fontFamily:"Georgia,serif", fontSize:28, fontWeight:400, wordColor:'#f0e8d8', hlColor:'#ffd700', bgStyle:'shadow', bgColor:'#000000', bgOpacity:60 },
-  hype: { fontFamily:"Impact,sans-serif", fontSize:52, fontWeight:900, wordColor:'#ffffff', hlColor:'#ff3366', bgStyle:'none', bgColor:'#000000', bgOpacity:0 },
-  minimal: { fontFamily:"'DM Sans',sans-serif", fontSize:24, fontWeight:500, wordColor:'#ffffff', hlColor:'#aaaaff', bgStyle:'shadow', bgColor:'#000000', bgOpacity:0 },
+  tiktok:  { font:"'Bebas Neue',sans-serif", size:38, weight:700, text:'#ffffff', hl:'#ffdd00', bg:'box',     bgcol:'#000000', bgop:72 },
+  capcut:  { font:"'DM Sans',sans-serif",    size:32, weight:900, text:'#ffffff', hl:'#00ccff', bg:'outline', bgcol:'#000000', bgop:80 },
+  hype:    { font:"Impact,sans-serif",        size:56, weight:900, text:'#ffffff', hl:'#ff3366', bg:'shadow',  bgcol:'#000000', bgop:0  },
+  youtube: { font:"'DM Sans',sans-serif",    size:26, weight:600, text:'#ffffff', hl:'#ffffff', bg:'bar',     bgcol:'#000000', bgop:85 },
+  cinema:  { font:"Georgia,serif",            size:28, weight:400, text:'#f5ecd7', hl:'#ffd700', bg:'shadow',  bgcol:'#000000', bgop:0  },
+  minimal: { font:"'DM Sans',sans-serif",    size:24, weight:400, text:'#ffffff', hl:'#aaaaff', bg:'shadow',  bgcol:'#000000', bgop:0  },
 };
 
-window.applyPreset = function(name) {
-  document.querySelectorAll('.preset').forEach(p => p.classList.remove('active'));
-  event.target.closest('.preset').classList.add('active');
-  const p = PRESETS[name];
-  Object.assign(window.currentStyle, p);
-  document.getElementById('fontFamily').value = p.fontFamily;
-  document.getElementById('fontSize').value = p.fontSize;
-  document.getElementById('fontWeight').value = p.fontWeight;
-  document.getElementById('wordColor').value = p.wordColor;
-  document.getElementById('hlColor').value = p.hlColor;
-  document.getElementById('bgStyle').value = p.bgStyle;
-  document.getElementById('bgColor').value = p.bgColor;
-  document.getElementById('bgOpacity').value = p.bgOpacity;
-  window.updateStyle();
-};
+function applyPreset(el, name) {
+  document.querySelectorAll('.preset').forEach(p => p.classList.remove('on'));
+  el.classList.add('on');
+  Object.assign(S, PRESETS[name]);
+  document.getElementById('cFont').value = S.font;
+  document.getElementById('cSize').value = S.size;
+  document.getElementById('cWeight').value = S.weight;
+  document.getElementById('cText').value = S.text;
+  document.getElementById('cHL').value = S.hl;
+  document.getElementById('cBG').value = S.bg;
+  document.getElementById('cBGCol').value = S.bgcol;
+  document.getElementById('cBGOp').value = S.bgop;
+  document.getElementById('cSizeV').textContent = S.size + 'px';
+  document.getElementById('cBGOpV').textContent = S.bgop + '%';
+  renderCaptions();
+}
 
-// ─── WORD LIST ───────────────────────────────────────────────────────────────
+function setMode(el) {
+  document.querySelectorAll('.mode').forEach(m => m.classList.remove('on'));
+  el.classList.add('on'); displayMode = el.dataset.mode; renderCaptions();
+}
+
+function setAnim(el) {
+  document.querySelectorAll('.animopt').forEach(a => a.classList.remove('on'));
+  el.classList.add('on'); animStyle = el.dataset.anim;
+}
+
+document.querySelectorAll('.poscell').forEach(c => c.addEventListener('click', function() {
+  document.querySelectorAll('.poscell').forEach(x => x.classList.remove('on'));
+  this.classList.add('on'); captionPos = this.dataset.p; positionBox();
+}));
+
+// ── WORD LIST ─────────────────────────────────────────────────────────────────
 function renderWordList() {
   const list = document.getElementById('wordList');
-  if (!window.words.length) {
-    list.innerHTML = '<div style="color:var(--muted);font-size:0.8rem;text-align:center;padding:20px">Transcribe video first</div>';
-    return;
-  }
+  if (!words.length) { list.innerHTML = '<div style="color:var(--muted);font-size:0.78rem;text-align:center;padding:16px">Caption video first</div>'; return; }
   list.innerHTML = '';
-  window.words.forEach((w, i) => {
-    const r = document.createElement('div');
-    r.className = 'word-row';
-    r.innerHTML = `
-      <input type="text" value="${w.word.replace(/"/g,'&quot;')}" onchange="words[${i}].word=this.value;renderOverlay()">
-      <input type="number" value="${w.start.toFixed(2)}" step="0.05" onchange="words[${i}].start=+this.value;renderOverlay()">
-      <input type="number" value="${w.end.toFixed(2)}" step="0.05" onchange="words[${i}].end=+this.value;renderOverlay()">
-      <button class="del-w" onclick="deleteWord(${i})">✕</button>
-    `;
+  words.forEach((w, i) => {
+    const r = document.createElement('div'); r.className = 'wrow';
+    r.innerHTML = `<input type="text" value="${w.word.replace(/"/g,'&quot;')}" onchange="words[${i}].word=this.value;renderCaptions()">
+      <input type="number" value="${w.start}" step="0.05" onchange="words[${i}].start=+this.value">
+      <input type="number" value="${w.end}" step="0.05" onchange="words[${i}].end=+this.value">
+      <button class="wdel" onclick="words.splice(${i},1);renderWordList();renderCaptions();updateStats()">✕</button>`;
     list.appendChild(r);
   });
 }
 
-window.deleteWord = function(i) { window.words.splice(i,1); renderWordList(); renderOverlay(); updateStats(); };
-window.clearWords = function() { window.words=[]; renderWordList(); renderOverlay(); updateStats(); };
-window.addWord = function() {
-  const last = window.words.length ? window.words[window.words.length-1].end : 0;
-  window.words.push({ word:'Word', start:last, end:last+0.4 });
-  renderWordList(); renderOverlay();
-};
-window.autoDistribute = function() {
-  if (!window.words.length) return;
-  const dur = video.duration || window.words.length * 0.4;
-  const per = (dur * 0.95) / window.words.length;
-  window.words = window.words.map((w,i) => ({...w, start:i*per, end:(i+1)*per}));
-  renderWordList(); renderOverlay();
-  toast('Words distributed across video duration', 'ok');
-};
-
-// ─── EXPORT ─────────────────────────────────────────────────────────────────
-function wordsToGroups(size=5) {
-  const groups=[];let g=[];
-  window.words.forEach((w,i) => {
-    g.push(w);
-    if(g.length===size||i===window.words.length-1||/[.!?,;]$/.test(w.word)){groups.push([...g]);g=[];}
-  });
-  return groups;
+function autoDistrib() {
+  if (!words.length) return;
+  const dur = vid.duration || words.length * 0.4;
+  const per = (dur * 0.95) / words.length;
+  words = words.map((w,i) => ({...w, start:+(i*per).toFixed(2), end:+((i+1)*per).toFixed(2)}));
+  renderWordList(); renderCaptions(); toast('Auto-distributed!', 'ok');
 }
 
-window.exportSRT = function() {
-  if(!window.words.length){toast('No captions to export','err');return;}
-  let srt='';
-  wordsToGroups(6).forEach((g,i) => {
-    srt+=`${i+1}\n${srtT(g[0].start)} --> ${srtT(g[g.length-1].end)}\n${g.map(w=>w.word).join(' ')}\n\n`;
-  });
-  dl('captions.srt',srt); toast('SRT downloaded!','ok');
-};
+function addWrd() { const l = words.length ? words[words.length-1].end : 0; words.push({word:'Word',start:+l.toFixed(2),end:+(l+0.4).toFixed(2)}); renderWordList(); }
+function clearWrds() { words=[]; renderWordList(); renderCaptions(); updateStats(); }
 
-window.exportVTT = function() {
-  if(!window.words.length){toast('No captions to export','err');return;}
-  let vtt='WEBVTT\n\n';
-  wordsToGroups(6).forEach((g,i) => {
-    vtt+=`${i+1}\n${vttT(g[0].start)} --> ${vttT(g[g.length-1].end)}\n${g.map(w=>w.word).join(' ')}\n\n`;
-  });
-  dl('captions.vtt',vtt); toast('VTT downloaded!','ok');
-};
+// ── EXPORT ────────────────────────────────────────────────────────────────────
+function groups() {
+  const g=[]; let cur=[];
+  words.forEach((w,i) => { cur.push(w); if (cur.length===6||i===words.length-1||/[.!?,]$/.test(w.word)) { g.push([...cur]); cur=[]; } });
+  return g;
+}
 
-window.exportTXT = function() {
-  if(!window.words.length){toast('No words to export','err');return;}
-  dl('transcript.txt', window.words.map(w=>w.word).join(' ')); toast('Text downloaded!','ok');
-};
+function exportSRT() {
+  if (!words.length) { toast('No captions yet','err'); return; }
+  let s=''; groups().forEach((g,i) => { s+=`${i+1}\n${srtT(g[0].start)} --> ${srtT(g[g.length-1].end)}\n${g.map(w=>w.word).join(' ')}\n\n`; });
+  dl('captions.srt', s); toast('SRT downloaded!', 'ok');
+}
+function exportVTT() {
+  if (!words.length) { toast('No captions yet','err'); return; }
+  let s='WEBVTT\n\n'; groups().forEach((g,i) => { s+=`${i+1}\n${vttT(g[0].start)} --> ${vttT(g[g.length-1].end)}\n${g.map(w=>w.word).join(' ')}\n\n`; });
+  dl('captions.vtt', s); toast('VTT downloaded!', 'ok');
+}
+function exportTXT() { if (!words.length) { toast('No captions yet','err'); return; } dl('transcript.txt', words.map(w=>w.word).join(' ')); toast('Text downloaded!', 'ok'); }
 
-function srtT(s){const h=Math.floor(s/3600),m=Math.floor((s%3600)/60),sec=Math.floor(s%60),ms=Math.round((s%1)*1000);return `${p(h)}:${p(m)}:${p(sec)},${ms.toString().padStart(3,'0')}`}
-function vttT(s){const h=Math.floor(s/3600),m=Math.floor((s%3600)/60),sec=Math.floor(s%60),ms=Math.round((s%1)*1000);return `${p(h)}:${p(m)}:${p(sec)}.${ms.toString().padStart(3,'0')}`}
+function srtT(s){const h=Math.floor(s/3600),m=Math.floor((s%3600)/60),sc=Math.floor(s%60),ms=Math.round((s%1)*1000);return `${p(h)}:${p(m)}:${p(sc)},${ms.toString().padStart(3,'0')}`}
+function vttT(s){const h=Math.floor(s/3600),m=Math.floor((s%3600)/60),sc=Math.floor(s%60),ms=Math.round((s%1)*1000);return `${p(h)}:${p(m)}:${p(sc)}.${ms.toString().padStart(3,'0')}`}
 function p(n){return n.toString().padStart(2,'0')}
-function dl(name,content){const a=document.createElement('a');a.href='data:text/plain;charset=utf-8,'+encodeURIComponent(content);a.download=name;a.click();}
+function dl(name,content){const a=document.createElement('a');a.href='data:text/plain;charset=utf-8,'+encodeURIComponent(content);a.download=name;a.click()}
 
-// ─── STATS ──────────────────────────────────────────────────────────────────
-function updateStats() {
-  const panel = document.getElementById('statsPanel');
-  if(!window.words.length){panel.textContent='No captions yet';return;}
-  const dur = window.words[window.words.length-1].end - window.words[0].start;
-  const wpm = Math.round((window.words.length / dur) * 60);
-  panel.innerHTML = `Words: ${window.words.length}<br>Duration: ${fmt(dur)}<br>Pace: ~${wpm} WPM<br>Groups (SRT): ${wordsToGroups(6).length}`;
+// ── UTILS ─────────────────────────────────────────────────────────────────────
+function fmt(s){return `${Math.floor(s/60)}:${Math.floor(s%60).toString().padStart(2,'0')}`}
+function setStatus(t){document.getElementById('statusMsg').textContent=t}
+function updateStats(){
+  const el=document.getElementById('stats');
+  if(!words.length){el.textContent='No captions yet';return;}
+  const dur=words[words.length-1].end-words[0].start;
+  el.innerHTML=`Words: ${words.length}<br>Duration: ${fmt(dur)}<br>Groups: ${groups().length}`;
+}
+function toast(msg, type='ok'){
+  const t=document.getElementById('toast'); t.textContent=msg;
+  t.className='toast show '+type; clearTimeout(t._t);
+  t._t=setTimeout(()=>t.classList.remove('show'),3200);
+}
+function rtab(el, name){
+  document.querySelectorAll('.rtab').forEach(t=>t.classList.remove('on'));
+  el.classList.add('on');
+  document.querySelectorAll('.rpane').forEach(p=>p.classList.remove('on'));
+  document.getElementById('rp-'+name).classList.add('on');
 }
 
-// ─── UTILS ──────────────────────────────────────────────────────────────────
-function fmt(s){const m=Math.floor(s/60);return `${m}:${Math.floor(s%60).toString().padStart(2,'0')}`}
-function dot(state){document.getElementById('statusDot').className='status-dot '+state}
-function setStatus(t){document.getElementById('statusText').textContent=t}
-function setProgress(pct,label){
-  document.getElementById('progressBarFill').style.width=pct+'%';
-  document.getElementById('progressLabel').textContent=label;
-}
-window.toast=function(msg,type='ok'){
-  const t=document.getElementById('toast');
-  t.textContent=msg;t.className='toast show '+type;
-  clearTimeout(t._t);t._t=setTimeout(()=>t.classList.remove('show'),3500);
-};
-
-window.switchPTab = function(name) {
-  document.querySelectorAll('.ptab').forEach((t,i)=>{t.classList.toggle('active',['style','words','export'][i]===name)});
-  document.querySelectorAll('.ptab-content').forEach(c=>c.classList.remove('active'));
-  document.getElementById('pt-'+name).classList.add('active');
-};
-
-// ─── KEYFRAME ANIMATIONS ────────────────────────────────────────────────────
-const styleEl = document.createElement('style');
-styleEl.textContent = `
-@keyframes wPop{0%{transform:scale(0.7);opacity:0.4}60%{transform:scale(1.25)}100%{transform:scale(1.1)}}
-@keyframes wBounce{0%,100%{transform:translateY(0)}35%{transform:translateY(-10px)}65%{transform:translateY(3px)}}
-@keyframes wFade{0%{opacity:0;transform:scale(0.95)}100%{opacity:1;transform:scale(1.1)}}
-@keyframes wSlide{0%{transform:translateX(-14px);opacity:0}100%{transform:translateX(0);opacity:1}}
-@keyframes wZoom{0%{transform:scale(0.2);opacity:0}100%{transform:scale(1.1);opacity:1}}
+// ── KEYFRAMES ─────────────────────────────────────────────────────────────────
+const ks=document.createElement('style');
+ks.textContent=`
+@keyframes wPop{0%{transform:scale(0.7);opacity:0.4}60%{transform:scale(1.3)}100%{transform:scale(1.12)}}
+@keyframes wBounce{0%,100%{transform:translateY(0)}35%{transform:translateY(-10px)}70%{transform:translateY(3px)}}
+@keyframes wFade{0%{opacity:0;transform:scale(0.9)}100%{opacity:1;transform:scale(1.12)}}
+@keyframes wSlide{0%{transform:translateX(-14px);opacity:0}100%{transform:translateX(0)}}
+@keyframes wZoom{0%{transform:scale(0.2);opacity:0}100%{transform:scale(1.12);opacity:1}}
 `;
-document.head.appendChild(styleEl);
+document.head.appendChild(ks);
 
-// ─── INIT ────────────────────────────────────────────────────────────────────
-window.updateStyle();
-
+// init
+applyStyle();
 </script>
 </body>
 </html>
