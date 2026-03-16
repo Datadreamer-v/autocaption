@@ -488,71 +488,87 @@ async function transcribe() {
   cancelFlag = false;
   document.getElementById('transcribeBtn').disabled = true;
   document.getElementById('stopBtn').style.display = 'flex';
-  setLabel('Extracting audio...'); setProgress(5);
+  setLabel('Reading video file...'); setProgress(5);
 
   try {
-    // Step 1: Get audio blob from video file
     const file = window._videoFile;
-    setLabel('Uploading to AssemblyAI...'); setProgress(15);
 
-    // Step 2: Upload file to AssemblyAI
+    // STEP 1: Upload file as ArrayBuffer
+    setLabel('Uploading to AssemblyAI... (may take a moment for large files)'); setProgress(10);
+    const arrayBuf = await file.arrayBuffer();
+    if (cancelFlag) return reset();
+
     const uploadRes = await fetch('https://api.assemblyai.com/v2/upload', {
       method: 'POST',
       headers: { 'authorization': apiKey, 'content-type': 'application/octet-stream' },
-      body: file
+      body: arrayBuf
     });
-    if (!uploadRes.ok) throw new Error('Upload failed: ' + uploadRes.status);
+
+    if (!uploadRes.ok) {
+      let errMsg = uploadRes.status + ' ' + uploadRes.statusText;
+      try { const j = await uploadRes.json(); errMsg = j.error || errMsg; } catch(e){}
+      if (uploadRes.status === 401) { openModal(); throw new Error('Invalid API key — paste a valid key from app.assemblyai.com'); }
+      throw new Error('Upload failed: ' + errMsg);
+    }
+
     if (cancelFlag) return reset();
     const { upload_url } = await uploadRes.json();
-    setProgress(40); setLabel('Audio uploaded — starting transcription...');
+    setProgress(40); setLabel('Uploaded! Starting AI transcription...');
 
-    // Step 3: Request transcription with word timestamps
+    // STEP 2: Start transcription (word-level timestamps enabled by default)
     const txRes = await fetch('https://api.assemblyai.com/v2/transcript', {
       method: 'POST',
       headers: { 'authorization': apiKey, 'content-type': 'application/json' },
-      body: JSON.stringify({ audio_url: upload_url, word_boost: [], format_text: true })
+      body: JSON.stringify({ audio_url: upload_url, punctuate: true, format_text: true })
     });
-    if (!txRes.ok) throw new Error('Transcription request failed');
+
+    if (!txRes.ok) {
+      let errMsg = txRes.status;
+      try { const j = await txRes.json(); errMsg = j.error || errMsg; } catch(e){}
+      throw new Error('Transcription start failed: ' + errMsg);
+    }
+
     if (cancelFlag) return reset();
     const { id } = await txRes.json();
-    setProgress(50); setLabel('Transcribing... (this takes 30–60 seconds)');
+    setProgress(50); setLabel('AI is listening to your video... (30–90 sec)');
 
-    // Step 4: Poll for result
+    // STEP 3: Poll until done
     let result;
-    for (let i=0; i<60; i++) {
+    for (let i = 0; i < 90; i++) {
       if (cancelFlag) return reset();
       await sleep(3000);
       const poll = await fetch(`https://api.assemblyai.com/v2/transcript/${id}`, {
         headers: { 'authorization': apiKey }
       });
       result = await poll.json();
-      const pct = 50 + Math.min(i*0.8, 45);
-      setProgress(pct);
+      setProgress(50 + Math.min(i * 0.5, 45));
       if (result.status === 'completed') break;
-      if (result.status === 'error') throw new Error('Transcription error: ' + result.error);
-      setLabel(`Transcribing... (${result.status})`);
+      if (result.status === 'error') throw new Error('AI error: ' + result.error);
+      setLabel(`Transcribing... status: ${result.status} (${i*3}s elapsed)`);
     }
 
-    if (result.status !== 'completed') throw new Error('Timed out');
-    setProgress(100); setLabel(`✅ Done! ${result.words.length} words transcribed.`);
+    if (result.status !== 'completed') throw new Error('Timed out — try a shorter video');
+    if (!result.words || !result.words.length) throw new Error('No speech detected in video');
 
-    // Parse word-level timestamps (AssemblyAI uses milliseconds)
+    setProgress(100);
+    setLabel(`✅ ${result.words.length} words transcribed with perfect timing!`);
+
+    // AssemblyAI timestamps are in milliseconds — convert to seconds
     W = result.words.map(w => ({
       word: w.text,
-      start: w.start / 1000,
-      end: w.end / 1000
+      start: +(w.start / 1000).toFixed(3),
+      end: +(w.end / 1000).toFixed(3)
     }));
 
     renderCaps(); renderWordList(); updateStats();
-    toast(`✅ ${W.length} words with perfect timing!`, 'ok');
-    rtab(document.querySelectorAll('.rtab')[0], 'style');
+    toast(`✅ ${W.length} words synced!`, 'ok');
     vid.currentTime = 0;
 
   } catch(err) {
-    toast('Error: ' + err.message, 'err');
-    setLabel('Error — check your API key and try again.');
+    console.error('Transcription error:', err);
+    toast('❌ ' + err.message, 'err');
+    setLabel('Error: ' + err.message);
     setProgress(0);
-    if (err.message.includes('401') || err.message.includes('403')) openModal();
   }
 
   reset();
